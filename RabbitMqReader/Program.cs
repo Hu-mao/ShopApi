@@ -6,13 +6,7 @@ using System.Text.Json;
 
 namespace RabbitMqReader;
 
-sealed class User
-{
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-}
-
-internal class Program
+class Program
 {
     static async Task Main(string[] args)
     {
@@ -21,40 +15,39 @@ internal class Program
             .AddJsonFile("appsettings.json", optional: false)
             .Build();
 
+        var host = configuration["RabbitMq:Host"] ?? "localhost";
+        var port = int.Parse(configuration["RabbitMq:Port"] ?? "5672");
+        var username = configuration["RabbitMq:UserName"] ?? "guest";
+        var password = configuration["RabbitMq:Password"] ?? "guest";
+
         var factory = new ConnectionFactory
         {
-            HostName = configuration["RabbitMq:Host"] ?? "localhost",
-            Port = int.Parse(configuration["RabbitMq:Port"] ?? "5672"),
-            UserName = configuration["RabbitMq:UserName"] ?? "guest",
-            Password = configuration["RabbitMq:Password"] ?? "guest"
+            HostName = host,
+            Port = port,
+            UserName = username,
+            Password = password
         };
 
-        var connection = await factory.CreateConnectionAsync();
-        var channel = await connection.CreateChannelAsync();
+        await using var connection = await factory.CreateConnectionAsync();
+        await using var channel = await connection.CreateChannelAsync();
 
         await channel.QueueDeclareAsync(
             queue: "Users",
             durable: true,
             exclusive: false,
-            autoDelete: false
-        );
+            autoDelete: false,
+            arguments: null);
 
         var consumer = new AsyncEventingBasicConsumer(channel);
 
-        consumer.ReceivedAsync += async (sender, e) =>
+        consumer.ReceivedAsync += async (sender, ea) =>
         {
-            var body = e.Body.ToArray();
-            var json = Encoding.UTF8.GetString(body);
+            var body = ea.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
 
-            var message = JsonSerializer.Deserialize<User>(json);
-
-            if (message == null)
-                return;
-
-            Console.WriteLine("===== USER FROM QUEUE =====");
-            Console.WriteLine($"Email: {message.Email}");
-            Console.WriteLine($"Password: {message.Password}");
-            Console.WriteLine("===========================");
+            Console.WriteLine("Отримано користувача:");
+            Console.WriteLine(message);
+            Console.WriteLine();
 
             await Task.CompletedTask;
         };
@@ -62,15 +55,9 @@ internal class Program
         await channel.BasicConsumeAsync(
             queue: "Users",
             autoAck: true,
-            consumer: consumer
-        );
+            consumer: consumer);
 
-        Console.WriteLine("RabbitMQ Reader started.");
-        Console.WriteLine("Waiting messages from Users queue...");
-
+        Console.WriteLine("RabbitMqReader запущений...");
         Console.ReadLine();
-
-        await channel.CloseAsync();
-        await connection.CloseAsync();
     }
 }

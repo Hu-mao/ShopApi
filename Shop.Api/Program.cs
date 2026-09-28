@@ -24,14 +24,6 @@ using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 namespace Shop.Api;
-
-//public static class MiddlewareExtensions
-//{
-//    public static IApplicationBuilder UseRequestTimer(this IApplicationBuilder builder)
-//    {
-//        return builder.UseMiddleware<RequestTimerMiddleware>();
-//    }
-//}
 public class Program
 {
     public static async Task Main(string[] args)
@@ -135,7 +127,8 @@ public class Program
 
 
 
-
+        builder.Services.Configure<MongoDbSettings>(
+        configuration.GetSection("MongoDb"));
 
 
         builder.Services.AddScoped<RabbitMQProducer>();
@@ -224,6 +217,7 @@ public class Program
         //              .WithHeaders("Content-Type", "Authorization");
         //    });
         //});
+        builder.Services.AddSingleton<IProductFeedbackService, MongoProductFeedbackService>();
         builder.Services.AddHostedService<RabbitMqReaderService>();
         builder.Services.AddSingleton<IQueueService, RabbitMqService>();
         builder.Services.AddAuthorization();
