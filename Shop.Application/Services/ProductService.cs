@@ -9,14 +9,9 @@ namespace Shop.Application.Services;
 public class ProductService(
     IProductRepository _repository,
     IMapper _mapper,
-    ICachingService _cache)
+    ICachingService _cacheService)
     : IProductService
 {
-    private const string AllProductsCacheKey = "products:all";
-
-    private static string ProductCacheKey(int id)
-        => $"product:{id}";
-
     public async Task<int> CreateAsync(ProductCreateDTO dto)
     {
         var product = _mapper.Map<Product>(dto);
@@ -29,27 +24,14 @@ public class ProductService(
             })
             .ToList();
 
-        var id = await _repository.CreateAsync(product);
-
-
-        await _cache.RemoveAsync(AllProductsCacheKey);
-
-        return id;
+        return await _repository.CreateAsync(product);
     }
 
     public async Task<List<ProductReadDTO>> GetAllAsync()
     {
-
-        var cachedProducts =
-            await _cache.GetAsync<List<ProductReadDTO>>(AllProductsCacheKey);
-
-        if (cachedProducts != null)
-            return cachedProducts;
-
-
         var products = await _repository.GetAllAsync();
 
-        var result = products.Select(x => new ProductReadDTO
+        return products.Select(x => new ProductReadDTO
         {
             Id = x.Id,
             Name = x.Name,
@@ -60,34 +42,26 @@ public class ProductService(
             CategoryId = x.CategoryId,
             Images = x.Images.Select(i => i.Url).ToList()
         }).ToList();
-
-
-        await _cache.SetAsync(
-            AllProductsCacheKey,
-            result,
-            TimeSpan.FromMinutes(15));
-
-        return result;
     }
 
     public async Task<ProductReadDTO?> GetByIdAsync(int id)
     {
-        var cacheKey = ProductCacheKey(id);
-
+        var cacheKey = $"Product:{id}";
 
         var cachedProduct =
-            await _cache.GetAsync<ProductReadDTO>(cacheKey);
+            await _cacheService.GetAsync<ProductReadDTO>(cacheKey);
 
         if (cachedProduct != null)
+        {
             return cachedProduct;
-
+        }
 
         var product = await _repository.GetByIdAsync(id);
 
         if (product == null)
             return null;
 
-        var result = new ProductReadDTO
+        var productDTO = new ProductReadDTO
         {
             Id = product.Id,
             Name = product.Name,
@@ -99,12 +73,11 @@ public class ProductService(
             Images = product.Images.Select(i => i.Url).ToList()
         };
 
-
-        await _cache.SetAsync(
+        await _cacheService.SetAsync(
             cacheKey,
-            result,
+            productDTO,
             TimeSpan.FromMinutes(15));
 
-        return result;
+        return productDTO;
     }
-}ф
+}

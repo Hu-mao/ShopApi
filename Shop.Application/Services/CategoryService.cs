@@ -14,19 +14,30 @@ public class CategoryService(ICategoryRepository _repository, IMapper _mapper, I
 
     public async Task<CategoryReadDTO?> GetCategoryByIdAsync(int id)
     {
+        var cacheKey = $"Category:{id}";
+
+        var cachedCategory =
+            await _cacheService.GetAsync<CategoryReadDTO>(cacheKey);
+
+        if (cachedCategory != null)
+        {
+            return cachedCategory;
+        }
+
         var category = await _repository.GetCategoryByIdAsync(id);
-        return category == null ? null : _mapper.Map<CategoryReadDTO>(category);
+
+        if (category == null)
+            return null;
+
+        var categoryDTO = _mapper.Map<CategoryReadDTO>(category);
+
+        await _cacheService.SetAsync(
+            cacheKey,
+            categoryDTO,
+            TimeSpan.FromMinutes(15));
+
+        return categoryDTO;
     }
-
-    //public async Task<List<CategoryReadDTO>?> GetAllCategoriesAsync()
-    //{
-    //    List<Category>? categories = await _repository.GetAllCategoriesAsync();
-
-    //    if (categories == null || !categories.Any())
-    //        return null;
-
-    //    return _mapper.Map<List<CategoryReadDTO>>(categories);
-    //}
     public async Task<List<CategoryReadDTO>?> GetAllCategoriesAsync()
     {
         const string cacheKey = "Categories";
