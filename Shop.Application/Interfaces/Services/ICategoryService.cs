@@ -1,0 +1,19 @@
+﻿using Shop.Application.DTOs.CategoryDTOs;
+
+
+namespace Shop.Application.Interfaces.Services;
+
+public interface ICategoryService
+{
+    Task<int?> CreateCategoryAsync(CategoryCreateDTO dto);
+    Task<CategoryReadDTO?> GetCategoryByIdAsync(int id);
+    Task<List<CategoryReadDTO>?> GetAllCategoriesAsync();
+    Task<bool> UpdateCategoryAsync(CategoryUpdateDTO dto);
+    Task<bool> DeleteCategoryAsync(int id);
+    Task<List<CategoryReadDTO>?> GetParentCategoriesAsync(int id);
+
+    Task<List<CategoryReadDTO>?> GetChildCategoriesAsync(int id);
+
+    Task<List<CategoryTreeDTO>> GetCategoryTreeAsync();
+    Task<CategoryPagedDTO> GetCategoriesPagedAsync(int page, int pageSize);
+}
