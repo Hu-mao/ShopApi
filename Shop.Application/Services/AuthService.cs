@@ -20,7 +20,7 @@ namespace Shop.Application.Services
         IJWTService _jwtService,
         IConfiguration _configuration,
         IPasswordResetTokenRepository passwordResetTokenRepository,
-IEmailService emailService
+IEmailService emailService, IQueueService _queueService
     ) : IAuthService
     {
         private readonly IPasswordResetTokenRepository
@@ -29,7 +29,7 @@ IEmailService emailService
         private readonly IEmailService
             _emailService = emailService;
         public async Task<AuthResponseDTO?> RegisterAsync(
-            UserCreateDTO dto)
+    UserCreateDTO dto)
         {
             var isExist =
                 await _repository.IsExistEmailAsync(dto.Email);
@@ -48,6 +48,10 @@ IEmailService emailService
 
             if (registerUser == null)
                 return null;
+
+            await _queueService.PublishAsync(
+                "Users",
+                dto);
 
             var accessToken =
                 _jwtService.GenerateAccessToken(
