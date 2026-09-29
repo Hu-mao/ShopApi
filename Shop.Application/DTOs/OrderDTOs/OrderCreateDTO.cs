@@ -2,18 +2,19 @@
 
 public class OrderCreateDTO
 {
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
 
     public string FirstName { get; set; } = string.Empty;
+
     public string LastName { get; set; } = string.Empty;
 
     public string Email { get; set; } = string.Empty;
+
     public string Phone { get; set; } = string.Empty;
 
     public string Address { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
 
-    public decimal TotalPrice { get; set; }
+    public string City { get; set; } = string.Empty;
 
     public List<OrderProductDTO> Products { get; set; } = new();
 }

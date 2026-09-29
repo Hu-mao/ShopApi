@@ -190,6 +190,9 @@ public class Program
             options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
         });
+        builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMq"));
+
+        builder.Services.AddScoped<RabbitMQProducer>();
         //===============Cors
         builder.Services.AddCors(options =>
 
@@ -208,21 +211,11 @@ public class Program
             });
 
         });
-        //builder.Services.AddCors(options =>
-        //{
-        //    options.AddPolicy("ProductionPolicy", policy =>
-        //    {
-        //        policy.WithOrigins("https://example.com", "https://www.example.com")
-        //              .WithMethods("GET", "POST", "PUT", "DELETE")
-        //              .WithHeaders("Content-Type", "Authorization");
-        //    });
-        //});
+        builder.Services.AddHostedService<OrderRabbitMqConsumer>();
         builder.Services.AddSingleton<IProductFeedbackService, MongoProductFeedbackService>();
         builder.Services.AddHostedService<RabbitMqReaderService>();
         builder.Services.AddSingleton<IQueueService, RabbitMqService>();
         builder.Services.AddAuthorization();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        //builder.Services.AddOpenApi();
         var app = builder.Build();
         using (var scope = app.Services.CreateScope())
         {

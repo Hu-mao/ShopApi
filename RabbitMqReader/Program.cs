@@ -32,7 +32,7 @@ class Program
         await using var channel = await connection.CreateChannelAsync();
 
         await channel.QueueDeclareAsync(
-            queue: "Users",
+            queue: "Orders",
             durable: true,
             exclusive: false,
             autoDelete: false,

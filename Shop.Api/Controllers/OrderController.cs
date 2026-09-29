@@ -16,31 +16,50 @@ public class OrderController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateOrder([FromBody] OrderCreateDTO dto)
+    public async Task<IActionResult> CreateOrder(
+        [FromBody] OrderCreateDTO dto)
     {
+        if (dto.UserId == Guid.Empty)
+            return BadRequest("Некоректний UserId.");
+
         if (dto.Products == null || dto.Products.Count == 0)
-        {
             return BadRequest("Замовлення повинно містити хоча б один продукт.");
+
+        if (dto.Products.Any(x =>
+            x.ProductId <= 0 ||
+            x.Quantity <= 0))
+        {
+            return BadRequest(
+                "ProductId та Quantity повинні бути більшими за 0.");
         }
 
-        var order = new OrderMessage
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return BadRequest("Email є обов'язковим.");
+
+        var message = new OrderMessage
         {
             UserId = dto.UserId,
+
             FirstName = dto.FirstName,
+
             LastName = dto.LastName,
+
             Email = dto.Email,
+
             Phone = dto.Phone,
+
             Address = dto.Address,
+
             City = dto.City,
-            TotalPrice = dto.TotalPrice,
+
             Products = dto.Products
         };
 
-        await _rabbitMQProducer.SendOrderAsync(order);
+        await _rabbitMQProducer.SendOrderAsync(message);
 
-        return Ok(new
+        return Accepted(new
         {
-            message = "Замовлення додано в чергу Orders"
+            message = "Замовлення додано в чергу Orders."
         });
     }
 }
