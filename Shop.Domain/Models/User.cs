@@ -25,5 +25,8 @@ public class User : BaseEntity {
     
     
     [Column("is_active")] 
-    public bool IsActive { get; set; } = true; 
+    public bool IsActive { get; set; } = true;
+
+    public ICollection<DeliveryAddress> DeliveryAddresses { get; set; }
+    = new List<DeliveryAddress>();
 }

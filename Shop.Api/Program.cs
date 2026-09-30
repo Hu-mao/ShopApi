@@ -128,6 +128,11 @@ public class Program
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddValidatorsFromAssemblyContaining<CategoryCreateValidator>();
 
+        builder.Services.AddScoped<IDeliveryAddressRepository,
+    DeliveryAddressRepository>();
+
+        builder.Services.AddScoped<IDeliveryAddressService,
+            DeliveryAddressService>();
 
 
         builder.Services.Configure<MongoDbSettings>(
