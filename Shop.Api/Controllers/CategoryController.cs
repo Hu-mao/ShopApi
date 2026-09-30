@@ -1,15 +1,22 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Api.Interfaces;
 using Shop.Api.Request.Category;
+using Shop.Application.Commands.Category;
 using Shop.Application.DTOs.CategoryDTOs;
 using Shop.Application.Interfaces.Services;
+using Shop.Application.Queries.GetCategoryById;
+using Shop.Application.Queries.GetCategoryBySlug;
 
 namespace Shop.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")] //https://ip:port/api/v1
-public class CategoryController(ICategoryService _categoryService, IImageService _imageService):ControllerBase
+public class CategoryController(
+    ICategoryService _categoryService,
+    IImageService _imageService,
+    IMediator _mediator) : ControllerBase
 {
     [Authorize]
     [HttpPost]
@@ -30,7 +37,8 @@ public class CategoryController(ICategoryService _categoryService, IImageService
             ParentId = dto.ParentId,
         };
 
-        var id = await _categoryService.CreateCategoryAsync(createDto);
+        var id = await _mediator.Send(
+    new CreateCategoryCommand(createDto));
 
         return Ok($"Category created {id}");
     }
@@ -94,5 +102,17 @@ public class CategoryController(ICategoryService _categoryService, IImageService
             return NotFound();
 
         return Ok(tree);
+    }
+    [HttpGet("slug/{slug}")]
+    public async Task<ActionResult<CategoryReadDTO>> GetCategoryBySlug(
+    string slug)
+    {
+        var dto = await _mediator.Send(
+            new GetCategoryBySlugQuery(slug));
+
+        if (dto == null)
+            return NotFound();
+
+        return Ok(dto);
     }
 }

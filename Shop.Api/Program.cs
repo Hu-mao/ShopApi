@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +9,7 @@ using Microsoft.OpenApi;
 using Shop.Api.Interfaces;
 using Shop.Api.Middlewares;
 using Shop.Api.Services;
+using Shop.Application.Commands.Category;
 using Shop.Application.Interfaces;
 using Shop.Application.Interfaces.Repository;
 using Shop.Application.Interfaces.Services;
@@ -21,8 +24,6 @@ using Shop.Infrastructure.Repositories;
 using Shop.Infrastructure.Services;
 using StackExchange.Redis;
 using System.Text;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 namespace Shop.Api;
 public class Program
 {
@@ -39,7 +40,9 @@ public class Program
             typeof(CategoryProfile).Assembly,
             typeof(UserProfile).Assembly
         );
-
+        builder.Services.AddMediatR(cfg =>
+        cfg.RegisterServicesFromAssembly(
+        typeof(CreateCategoryCommand).Assembly));
 
         var configuration = builder.Configuration;
         builder.Services.Configure<JwtSettings>(configuration.GetSection("Jwt"));

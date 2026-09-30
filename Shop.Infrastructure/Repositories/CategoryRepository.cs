@@ -72,4 +72,9 @@ public class CategoryRepository(ShopDbContext _context) : ICategoryRepository
 
         return (items, totalItems);
     }
+    public async Task<Category?> GetCategoryBySlugAsync(string slug)
+    {
+        return await _context.Categories
+            .FirstOrDefaultAsync(x => x.Slug == slug);
+    }
 }

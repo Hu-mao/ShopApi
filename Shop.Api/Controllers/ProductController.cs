@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Shop.Api.Filters;
+using Shop.Application.Commands.Product;
 using Shop.Application.DTOs.ProductDTOs;
-using Shop.Application.Interfaces.Services;
 using Shop.Application.DTOs.ProductFeedbackDTOs;
+using Shop.Application.Interfaces.Services;
 namespace Shop.Api.Controllers;
 //URL - Uniform Resource Locator - текстовий рядок, який вказує
 //на місце розташування ресурса
@@ -12,12 +14,15 @@ namespace Shop.Api.Controllers;
 [LogActionFilter]
 public class ProductController(
     IProductService _productService,
-    IProductFeedbackService _feedbackService) : ControllerBase
+    IProductFeedbackService _feedbackService,
+    IMediator _mediator) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] ProductCreateDTO dto)
+    public async Task<IActionResult> Create(
+    [FromBody] ProductCreateDTO dto)
     {
-        var id = await _productService.CreateAsync(dto);
+        var id = await _mediator.Send(
+            new CreateProductCommand(dto));
 
         return CreatedAtAction(
             nameof(GetById),
