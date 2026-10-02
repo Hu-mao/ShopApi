@@ -11,6 +11,7 @@ using Shop.Api.Middlewares;
 using Shop.Api.Services;
 using Shop.Application.Commands.Category;
 using Shop.Application.Interfaces;
+using Shop.Application.Interfaces.Repositories;
 using Shop.Application.Interfaces.Repository;
 using Shop.Application.Interfaces.Services;
 using Shop.Application.Mapping;
@@ -128,11 +129,11 @@ public class Program
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddValidatorsFromAssemblyContaining<CategoryCreateValidator>();
 
-        builder.Services.AddScoped<IDeliveryAddressRepository,
+        builder.Services.AddScoped<
+    IDeliveryAddressRepository,
     DeliveryAddressRepository>();
 
-        builder.Services.AddScoped<IDeliveryAddressService,
-            DeliveryAddressService>();
+        builder.Services.AddScoped<DeliveryAddressService>();
 
 
         builder.Services.Configure<MongoDbSettings>(

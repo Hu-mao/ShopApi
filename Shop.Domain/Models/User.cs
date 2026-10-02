@@ -1,4 +1,5 @@
-﻿using Shop.Domain.Enums;
+﻿using Shop.Domain.Entities;
+using Shop.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

@@ -1,10 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Shop.Application.DTOs.DeliveryAddress;
 
-namespace Shop.Application.DTOs.DeliveryAddressDTOs
+public class DeliveryAddressReadDto
 {
-    internal class DeliveryAddressReadDTO
-    {
-    }
+    public Guid Id { get; set; }
+
+    public string Title { get; set; } = null!;
+
+    public string City { get; set; } = null!;
+
+    public string Street { get; set; } = null!;
+
+    public string House { get; set; } = null!;
+
+    public string? Apartment { get; set; }
+
+    public string? PostalCode { get; set; }
 }
