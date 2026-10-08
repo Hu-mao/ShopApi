@@ -20,8 +20,7 @@ namespace Shop.Application.Services
         IJWTService _jwtService,
         IConfiguration _configuration,
         IPasswordResetTokenRepository passwordResetTokenRepository,
-IEmailService emailService, IQueueService _queueService,
-IUserProviderRepository _userProviderRepository
+IEmailService emailService, IQueueService _queueService,\n        IUserProviderRepository _userProviderRepository
     ) : IAuthService
     {
         private readonly IPasswordResetTokenRepository

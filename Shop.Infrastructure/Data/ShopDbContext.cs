@@ -20,9 +20,8 @@ public class ShopDbContext:DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderDetail> OrderDetails { get; set; }
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
-    public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }
-    public DbSet<Provider> Providers { get; set; }
-    public DbSet<UserProvider> UserProviders { get; set; }
+    public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }\n    public DbSet<Provider> Providers { get; set; }\n    public DbSet<UserProvider> UserProviders { get; set; }
+    // Автоматично встановлює CreatedAt і UpdatedAt перед збереженням
     public override int SaveChanges()
     {
         SetTimestamps();
