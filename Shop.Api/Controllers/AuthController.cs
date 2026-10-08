@@ -61,31 +61,43 @@ namespace Shop.Api.Controllers
 
         [HttpGet("external-response")]
         public async Task<IActionResult> ExternalResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
 
-{
+            if (!result.Succeeded)
+                return BadRequest("Помилка зовнішньої аутентифікації.");
 
-    var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            var claims = result.Principal?.Identities
+                .FirstOrDefault()?.Claims;
 
+            var email = claims?
+                .FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-    if (!result.Succeeded)
+            var providerNumber = claims?
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-        return BadRequest("Помилка зовнішньої аутентифікації.");
+            if (string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(providerNumber))
+                return BadRequest("Не вдалося отримати дані Google.");
 
+            var authResult = await _authService.ExternalLoginAsync(
+                email,
+                "google",
+                providerNumber);
 
-        var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
+            if (authResult == null)
+                return BadRequest("Не вдалося створити зовнішню авторизацію.");
 
+            SetRefreshTokenCookie(authResult.RefreshToken!);
 
-        var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-
-        var name = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-
-        var providerId = claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-        return Ok(new { Name = name, Email = email, ProviderId = providerId });
-
-        
-   
-}
+            return Ok(new
+            {
+                user = authResult.User,
+                accessToken = authResult.Token,
+                refreshToken = authResult.RefreshToken
+            });
+        }
 
         [HttpPost("logout")]
 

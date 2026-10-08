@@ -49,5 +49,11 @@ namespace Shop.Infrastructure.Repositories
             return await _context.Users
                 .FirstOrDefaultAsync(x => x.Email == email);
         }
+        public async Task<User?> AddExternalUserAsync(User user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
     }
 }

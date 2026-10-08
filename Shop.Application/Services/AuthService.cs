@@ -20,7 +20,7 @@ namespace Shop.Application.Services
         IJWTService _jwtService,
         IConfiguration _configuration,
         IPasswordResetTokenRepository passwordResetTokenRepository,
-IEmailService emailService, IQueueService _queueService
+IEmailService emailService, IQueueService _queueService,\n        IUserProviderRepository _userProviderRepository
     ) : IAuthService
     {
         private readonly IPasswordResetTokenRepository
@@ -71,6 +71,80 @@ IEmailService emailService, IQueueService _queueService
             };
         }
 
+
+        public async Task<AuthResponseDTO?> ExternalLoginAsync(
+            string email,
+            string providerName,
+            string providerNumber)
+        {
+            var provider =
+                await _userProviderRepository.GetProviderAsync(providerName);
+
+            if (provider == null)
+                return null;
+
+            var user =
+                await _repository.GetUserByEmailAsync(email);
+
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = email,
+                    PasswordHash = _hashHelper.Hash(
+                        Guid.NewGuid().ToString("N")),
+                    Role = UserRole.User,
+                    IsActive = true
+                };
+
+                user = await _repository.AddExternalUserAsync(user);
+
+                if (user == null)
+                    return null;
+            }
+
+            if (!user.IsActive)
+                return null;
+
+            var userProvider =
+                await _userProviderRepository.GetAsync(
+                    user.Id,
+                    provider.Id);
+
+            if (userProvider == null)
+            {
+                await _userProviderRepository.AddAsync(
+                    new UserProvider
+                    {
+                        UserId = user.Id,
+                        ProviderId = provider.Id,
+                        NumberProvider = providerNumber
+                    });
+            }
+
+            var loginDto = new UserLoginDTO
+            {
+                Email = user.Email,
+                Password = string.Empty
+            };
+
+            var accessToken =
+                _jwtService.GenerateAccessToken(
+                    loginDto,
+                    user.Role.ToString());
+
+            var refreshToken =
+                CreateRefreshToken(user.Id);
+
+            await _refreshTokenRepository.AddAsync(refreshToken);
+
+            return new AuthResponseDTO
+            {
+                User = _mapper.Map<UserReadDTO>(user),
+                Token = accessToken,
+                RefreshToken = refreshToken.Token
+            };
+        }
 
         public async Task<AuthResponseDTO?> LoginAsync(
             UserLoginDTO dto)
@@ -141,7 +215,7 @@ IEmailService emailService, IQueueService _queueService
         private RefreshToken CreateRefreshToken(Guid userId)
         {
             var expiresDays = int.Parse(
-     _configuration["JwtSettings:ExpiresRefreshTokenDay"]!
+     _configuration["Jwt:ExpiresRefreshTokenDay"]!
  );
 
             return new RefreshToken

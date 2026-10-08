@@ -20,7 +20,7 @@ public class ShopDbContext:DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderDetail> OrderDetails { get; set; }
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
-    public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }
+    public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }\n    public DbSet<Provider> Providers { get; set; }\n    public DbSet<UserProvider> UserProviders { get; set; }
     // Автоматично встановлює CreatedAt і UpdatedAt перед збереженням
     public override int SaveChanges()
     {
@@ -58,6 +58,34 @@ public class ShopDbContext:DbContext
         modelBuilder.Entity<User>(entity => {
             entity.HasIndex(u => u.Email).IsUnique();
         });
+
+        modelBuilder.Entity<Provider>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => x.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<UserProvider>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasIndex(x => new { x.UserId, x.ProviderId })
+                .IsUnique();
+
+            entity.HasIndex(x => new { x.ProviderId, x.NumberProvider })
+                .IsUnique();
+
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.Provider)
+                .WithMany(x => x.UserProviders)
+                .HasForeignKey(x => x.ProviderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         // --- Category ---
         modelBuilder.Entity<Category>(entity =>
         {
