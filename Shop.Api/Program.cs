@@ -122,7 +122,8 @@ public class Program
         //--------------REPOSITORIES
         builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
         builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-        builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();\n        builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
+        builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        builder.Services.AddScoped<IUserProviderRepository, UserProviderRepository>();
         builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         builder.Services.AddScoped<IProductRepository, ProductRepository>();
         //VALIDATORS
@@ -234,7 +235,8 @@ public class Program
             var hashHelper = scope.ServiceProvider
                 .GetRequiredService<IHashHelper>();
 
-            await ProviderSeeder.SeedAsync(context);\n            await AdminSeeder.SeedAsync(context, hashHelper);
+            await ProviderSeeder.SeedAsync(context);
+            await AdminSeeder.SeedAsync(context, hashHelper);
         }
         app.UseSwagger();
         app.UseSwaggerUI();

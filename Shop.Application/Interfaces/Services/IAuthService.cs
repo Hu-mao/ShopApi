@@ -10,7 +10,8 @@ namespace Shop.Application.Interfaces.Services
         Task<AuthResponseDTO?> RegisterAsync(UserCreateDTO dto);
         Task<AuthResponseDTO?> RefreshAsync(string refreshToken);
         Task<UserReadDTO?> CreateAdminAsync(AdminCreateDTO dto);
-        Task<AuthResponseDTO?> LoginAsync(UserLoginDTO dto);\n        Task<AuthResponseDTO?> ExternalLoginAsync(string email, string providerName, string providerNumber);
+        Task<AuthResponseDTO?> LoginAsync(UserLoginDTO dto);
+        Task<AuthResponseDTO?> ExternalLoginAsync(string email, string providerName, string providerNumber);
         Task ResetPasswordAsync(ResetPasswordDTO dto);
         Task ForgotPasswordAsync(ForgotPasswordDTO dto);
     }
